@@ -1,16 +1,5 @@
 #include "TakeNet_UDP_Server.h"
 
-bool TakeNet_UDP_Server::WaitState(uint64_t *desc, int id, int ms){
-	uint64_t then =  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	if(desc[id] <= 0){
-		desc[id] = then;
-	}
-	if(then-desc[id] > ms){
-		desc[id] = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		return true;
-	} return false;
-}
-
 int TakeNet_UDP_Server::GetClientIDFromBitStream(TakeNet_BitStream *bsPacket){
 	int ClientID = -1;
 	for(int i = 0;i<(int)MaxConnections;i++){

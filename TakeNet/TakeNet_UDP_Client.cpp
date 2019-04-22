@@ -1,16 +1,5 @@
 #include "TakeNet_UDP_Client.h"
 
-bool TakeNet_UDP_Client::WaitState(uint64_t *desc, int id, int ms){
-	uint64_t then =  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	if(desc[id] <= 0){
-		desc[id] = then;
-	}
-	if(then-desc[id] > ms){
-		desc[id] = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-		return true;
-	} return false;
-}
-
 int TakeNet_UDP_Client::NetReceiveFromUpdate(void){
 	while(ThreadController_1){
 		std::vector<char> pRecvBytesData;
@@ -28,7 +17,7 @@ int TakeNet_UDP_Client::NetReceiveFromUpdate(void){
 					break;
 				}
 			}
-		}
+		} pNetStats.BytesRecv += pRecvBytesData.size();
 
 		if(bytes == -1){
 			TakeNet_BitStream bsTimeout;
@@ -48,6 +37,7 @@ int TakeNet_UDP_Client::NetPingUpdate(void){
 		if(IsConnected){
 			TakeNet_BitStream bsOut;
 			bsOut.Write<short>(ID_PACKET_PING);
+			pNetStats.BytesSent += bsOut.GetSize();
 			sendto(Client,(char*)bsOut.GetData(),bsOut.GetSize(),0,(sockaddr*)&host,sizeof(host));
 		} std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
@@ -60,6 +50,7 @@ TakeNet_UDP_Client::TakeNet_UDP_Client(void){
 	memset(&Client,0,sizeof(SOCKET));
 	memset(&Wsd,0,sizeof(WSADATA));
 	memset(&host,0,sizeof(sockaddr_in));
+	memset(&pNetStats,0,sizeof(NetStats));
 	pThread_1 = NULL;
 	pThread_2 = NULL;
 	IsConnected = false;
@@ -88,8 +79,10 @@ bool TakeNet_UDP_Client::Connect(char *IpAddress,unsigned short Port){
 
 		TakeNet_BitStream bsOut;
 		bsOut.Write<short>(ID_PACKET_CONNECT);
+		pNetStats.BytesSent += bsOut.GetSize();
 		sendto(Client,(char*)bsOut.GetData(),bsOut.GetSize(),0,(sockaddr*)&host,sizeof(host));
 		ThreadController_1 = true; pThread_1 = new std::thread([this]{this->NetReceiveFromUpdate();});
+		pNetStats.TimeWhenStarted = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 		return true;
 	}
@@ -101,6 +94,7 @@ void TakeNet_UDP_Client::Disconnect(void){
 	if(IsConnected){
 		TakeNet_BitStream bsOut;
 		bsOut.Write<short>(ID_PACKET_DISCONNECT);
+		pNetStats.BytesSent += bsOut.GetSize();
 		sendto(Client,(char*)bsOut.GetData(),bsOut.GetSize(),0,(sockaddr*)&host,sizeof(host));
 	}
 
@@ -112,6 +106,7 @@ void TakeNet_UDP_Client::Disconnect(void){
 	memset(&Client,0,sizeof(SOCKET));
 	memset(&Wsd,0,sizeof(WSADATA));
 	memset(&host,0,sizeof(sockaddr_in));
+	memset(&pNetStats,0,sizeof(NetStats));
 
 	if(pThread_1 != NULL){
 		pThread_1->detach();
@@ -130,6 +125,7 @@ void TakeNet_UDP_Client::Disconnect(void){
 
 void TakeNet_UDP_Client::SendData(TakeNet_BitStream pSendBitStream){
 	if(IsConnected){
+		pNetStats.BytesSent += pSendBitStream.GetSize();
 		sendto(Client,(char*)pSendBitStream.GetData(),pSendBitStream.GetSize(),0,(sockaddr*)&host,sizeof(host));
 	}
 }
@@ -155,4 +151,8 @@ TakeNet_BitStream TakeNet_UDP_Client::GetPacket(int PacketID){
 
 int TakeNet_UDP_Client::GetPacketsCount(void){
 	return pPackets.size();
+}
+
+TakeNet_UDP_Client::NetStats TakeNet_UDP_Client::GetClientNetStats(void){
+	return pNetStats;
 }

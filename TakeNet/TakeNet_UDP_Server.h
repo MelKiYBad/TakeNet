@@ -12,11 +12,14 @@ public:
 		__int64 BytesSent;
 		__int64 BytesRecv;
 		__int64 TimeWhenStarted;
+		__int64 GetConnectionAlive(void){
+			__int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			return now-TimeWhenStarted;
+		}
 	};
 private:
 	SOCKET Server;
 	WSADATA Wsd;
-	uint64_t WaitTime[1];
 	int MaxConnections;
 	std::thread *pThread_1; bool ThreadController_1;
 	std::thread *pThread_2; bool ThreadController_2;
@@ -27,7 +30,6 @@ private:
 	std::vector<__int64> pClientPing;
 	NetStats pNetStats;
 private:
-	bool WaitState(uint64_t *desc, int id, int ms);
 	int GetClientIDFromBitStream(TakeNet_BitStream *bsPacket);
 	int GetFreeIDFromClientInuse(void);
 protected:
