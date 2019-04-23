@@ -6,7 +6,7 @@
 
 #ifdef MAKE_SERVER
 #include "TakeNet_UDP_SERVER.h"
-#else
+#elif defined MAKE_CLIENT
 #include "TakeNet_UDP_Client.h"
 #endif
 
