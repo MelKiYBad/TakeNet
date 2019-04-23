@@ -1,9 +1,14 @@
 #define MAKE_SERVER // MAKE_CLIENT
 
 #include <iostream>
+#include <fstream>
 #include "TakeNet_BitStream.h"
+
+#ifdef MAKE_SERVER
+#include "TakeNet_UDP_SERVER.h"
+#else
 #include "TakeNet_UDP_Client.h"
-#include "TakeNet_UDP_Server.h"
+#endif
 
 int main(int argc,char **argv){
 
@@ -15,7 +20,8 @@ int main(int argc,char **argv){
 		for(int i = 0;i<pServer->GetPacketsCount();i++){
 			int ClientID; TakeNet_BitStream pReceiveBitStream = pServer->GetPacket(i,ClientID);
 			short PacketID; pReceiveBitStream.Read<short>(PacketID);
-		
+			std::cout << PacketID << std::endl;
+
 			switch(PacketID){
 				case ID_PACKET_CONNECT:{
 					std::cout << "Connected: " << ClientID << std::endl;
