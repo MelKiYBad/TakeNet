@@ -1,6 +1,5 @@
 #define MAKE_SERVER // MAKE_CLIENT
 
-#include <sdkddkver.h>
 #include <iostream>
 #include "TakeNet_BitStream.h"
 #include "TakeNet_UDP_Client.h"
