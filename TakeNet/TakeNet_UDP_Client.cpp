@@ -100,7 +100,6 @@ void TakeNet_UDP_Client::Disconnect(void){
 
 	closesocket(Client);
 	WSACleanup();
-
 	ThreadController_1 = false;
 	ThreadController_2 = false;
 	memset(&Client,0,sizeof(SOCKET));

@@ -112,10 +112,8 @@ void TakeNet_UDP_Server::Shutdown(void){
 	TakeNet_BitStream bsDisconnect;
 	bsDisconnect.Write<short>(ID_PACKET_DISCONNECT);
 	BroadcastData(bsDisconnect);
-
 	closesocket(Server);
 	WSACleanup();
-
 	MaxConnections = 0;
 	ThreadController_1 = false;
 	ThreadController_2 = false;
