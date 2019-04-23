@@ -16,6 +16,7 @@ typedef int SOCKET;
 #define WSADATA int
 #define WSAStartup(wsdlin,wsdlin2) wsdlin = 0
 #define WSACleanup(wsdlin)
+#define closesocket(s) close(s)
 #endif
 
 #include <vector>
